@@ -610,7 +610,9 @@ export async function createAgent(
             getSecret(character, "ECHOCHAMBERS_API_KEY")
                 ? echoChamberPlugin
                 : null,
-            getSecret(character, "NILLION_PRIVATE_KEY") ? nillionPlugin : null,
+            getSecret(character, "NILLION_NILDB_NODE_JWTS")
+                ? nillionPlugin
+                : null,
         ].filter(Boolean),
         providers: [],
         actions: [],

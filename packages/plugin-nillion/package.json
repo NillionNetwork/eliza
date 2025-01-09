@@ -19,8 +19,8 @@
         "dist"
     ],
     "dependencies": {
-        "@nillion/nilql": "0.1.0",
         "@elizaos/core": "workspace:*",
+        "@nillion/nilql": "0.0.0-alpha.2",
         "tsup": "8.3.5"
     },
     "scripts": {

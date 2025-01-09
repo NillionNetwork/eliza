@@ -9,7 +9,6 @@ import {
     ActionExample,
     generateObject,
 } from "@elizaos/core";
-import { promises as fs } from "fs";
 import { nilql } from "@nillion/nilql";
 import { composeContext } from "@elizaos/core";
 import { uploadTemplate } from "../templates/upload";
@@ -50,7 +49,9 @@ export const NillionUpload: Action = {
     description: "Encrypt and store secrets using Nillion NilDB",
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         const schemaId = runtime.getSetting("NILLION_NILDB_SCHEMA_ID");
-        const nodes = runtime.getSetting("NILLION_NILDB_NODE_IDS")?.split(",") || [];
+        const nodes =
+            runtime.getSetting("NILLION_NILDB_NODE_IDS")?.split(",") || [];
+        console.log("NILLION_UPLOAD validate called");
         return schemaId && nodes.length > 0;
     },
     handler: async (
@@ -60,7 +61,7 @@ export const NillionUpload: Action = {
         _options: any,
         callback: HandlerCallback
     ) => {
-        console.log("NILLION_UPLOAD action called");
+        console.log("NILLION_UPLOAD handler called");
         if (!state) {
             state = (await runtime.composeState(message)) as State;
         } else {
@@ -84,7 +85,7 @@ export const NillionUpload: Action = {
         if (!isUploadContent(runtime, content)) {
             console.error("Invalid content for UPLOAD action.");
             if (callback) {
-                callback({
+                await callback({
                     text: "Unable to process Nillion nilDB upload request. Invalid content provided.",
                     content: { error: "Invalid upload content" },
                 });
@@ -94,16 +95,30 @@ export const NillionUpload: Action = {
 
         try {
             const schemaId = runtime.getSetting("NILLION_NILDB_SCHEMA_ID");
-            const nodeIds = runtime.getSetting("NILLION_NILDB_NODE_IDS")?.split(",") || [];
-            const nodeUrls = runtime.getSetting("NILLION_NILDB_NODE_URLS")?.split(",") || [];
-            const nodeJwts = runtime.getSetting("NILLION_NILDB_NODE_JWTS")?.split(",") || [];
+            const nodeIds =
+                runtime.getSetting("NILLION_NILDB_NODE_IDS")?.split(",") || [];
+            const nodeUrls =
+                runtime.getSetting("NILLION_NILDB_NODE_URLS")?.split(",") || [];
+            const nodeJwts =
+                runtime.getSetting("NILLION_NILDB_NODE_JWTS")?.split(",") || [];
 
-            assert(nodeIds.length === nodeUrls.length, "Mismatch in node IDs and URLs count");
-            assert(nodeIds.length === nodeJwts.length, "Mismatch in node IDs and JWTs count");
+            assert(
+                nodeIds.length === nodeUrls.length,
+                "Mismatch in node IDs and URLs count"
+            );
+            assert(
+                nodeIds.length === nodeJwts.length,
+                "Mismatch in node IDs and JWTs count"
+            );
 
-            const cluster = { nodes: Array.from({ length: nodeIds.length }, () => ({})) };
+            const cluster = {
+                nodes: Array.from({ length: nodeIds.length }, () => ({})),
+            };
             const secretKey = await nilql.secretKey(cluster, { store: true });
-            const sharesOfSecret = await nilql.encrypt(secretKey, content.secret);
+            const sharesOfSecret = await nilql.encrypt(
+                secretKey,
+                content.secret
+            );
             const dataId = uuid4();
 
             const uploadPromises = nodeIds.map(async (nodeId, i) => {
@@ -124,11 +139,19 @@ export const NillionUpload: Action = {
                 };
 
                 try {
-                    const response = await axios.post(nodeUrl, payload, { headers });
+                    const response = await axios.post(nodeUrl, payload, {
+                        headers,
+                    });
                     if (response.status === 200) {
-                        console.log(`Data uploaded successfully to ${nodeId}:`, response.data);
+                        console.log(
+                            `Data uploaded successfully to ${nodeId}:`,
+                            response.data
+                        );
                     } else {
-                        console.error(`Error uploading to ${nodeId}:`, response.data);
+                        console.error(
+                            `Error uploading to ${nodeId}:`,
+                            response.data
+                        );
                     }
                 } catch (error) {
                     console.error(`Error uploading to ${nodeId}:`, error);
@@ -137,7 +160,7 @@ export const NillionUpload: Action = {
 
             await Promise.all(uploadPromises);
 
-            callback?.({
+            await callback({
                 text: "Data uploaded to all Nillion nodes successfully.",
             });
             return true;

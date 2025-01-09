@@ -1,10 +1,10 @@
 import { Plugin } from "@elizaos/core";
-import { nillionUpload } from "./actions/upload";
+import { NillionUpload } from "./actions/upload";
 
-export const zgPlugin: Plugin = {
+export const nillionPlugin: Plugin = {
     description: "Nillion's nilDB Plugin for Eliza",
     name: "Nillion",
-    actions: [nillionUpload],
+    actions: [NillionUpload],
     evaluators: [],
     providers: [],
 };
