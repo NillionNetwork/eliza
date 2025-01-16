@@ -59,7 +59,7 @@ To avoid git clashes in the core directory, we recommend adding custom actions t
 
 ### Run with Llama
 
-You can run Llama 70B or 405B models by setting the `XAI_MODEL` environment variable to `meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo` or `meta-llama/Meta-Llama-3.1-405B-Instruct`
+You can run Llama 70B or 405B models by setting the `XAI_MODEL` environment variable to `meta-llama/Meta-Llama-3.1-70B-Instruct` or `meta-llama/Meta-Llama-3.1-405B-Instruct`
 
 ### Run with Grok
 
